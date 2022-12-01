@@ -1,6 +1,46 @@
-package structs
+package main
 
-type ResultStruct struct {
+import (
+	"encoding/json"
+	"net/http"
+	"time"
+)
+
+var (
+	// BaseURL is the base URL for the Saavn API
+	BaseURL        string = "https://jiosaavn-api-privatecvc.vercel.app"
+	SearchEndpoint string = "/search/songs?query="
+	Bitrate        string = "320"
+	limit          string = "10"
+)
+
+func SearchSong(query string) SearchResponse {
+	// return func() tea.Msg {
+	var url string = (BaseURL + SearchEndpoint + query + "&limit=" + limit)
+	c := &http.Client{Timeout: 10 * time.Second}
+	res, err := c.Get(url)
+	if err != nil {
+		// return errMsg{err}
+	}
+	defer res.Body.Close()
+	var out SearchResponse
+	err = json.NewDecoder(res.Body).Decode(&out)
+	if err != nil {
+		// return errMsg{err}
+	}
+	return out
+
+	// return resultMsg(out)
+	// }
+}
+
+type resultMsg SearchResponse
+
+type errMsg struct{ err error }
+
+func (e errMsg) Error() string { return e.err.Error() }
+
+type SearchResponse struct {
 	Status  string `json:"status"`
 	Results []struct {
 		ID    string `json:"id"`
